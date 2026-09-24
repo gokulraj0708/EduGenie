@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGenie - AI Powered Learning Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>EduGenie</h1>
+            </div>
+            <p class="tagline">Google Gemini Powered Learning Assistant</p>
+            <p class="subtitle">Simplify learning through generative AI • Ask • Explain • Quiz • Summarize • Learn</p>
+            <div class="status-badge {% if has_api_key %}status-active{% else %}status-fallback{% endif %}">
+                {% if has_api_key %}
+                <i class="fas fa-check-circle"></i> Gemini Active ({{ model_name }})
+                {% else %}
+                <i class="fas fa-info-circle"></i> Fallback Mode - Add GEMINI_API_KEY for AI power
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Main Card -->
+        <main class="main-card">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="task-select"><i class="fas fa-tasks"></i> Select Task</label>
+                    <select id="task-select" class="task-dropdown">
+                        <option value="qa">❓ Ask Question (QnA)</option>
+                        <option value="explain">💡 Explain Concept</option>
+                        <option value="quiz">📝 Generate Quiz (3 MCQs)</option>
+                        <option value="summarize">📄 Summarize Text</option>
+                        <option value="learning_path">🎯 Learning Recommendations</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label id="input-label" for="user-input"><i class="fas fa-edit"></i> Your Question</label>
+                    <textarea id="user-input" placeholder="e.g., Which is the largest ocean?" rows="5"></textarea>
+                    <div class="char-count"><span id="char-count">0</span> characters</div>
+                </div>
+
+                <div class="examples">
+                    <span>Try examples:</span>
+                    <button class="example-btn" data-task="qa" data-text="Which is the largest ocean?">Largest Ocean</button>
+                    <button class="example-btn" data-task="explain" data-text="The Pythagoras Theorem">Pythagoras Theorem</button>
+                    <button class="example-btn" data-task="quiz" data-text="Photosynthesis is the process by which green plants use sunlight to synthesize foods from carbon dioxide and water. It involves chlorophyll and produces oxygen as a byproduct. This process is crucial for life on Earth.">Quiz from Text</button>
+                    <button class="example-btn" data-task="summarize" data-text="Artificial Intelligence (AI) is a broad field of computer science concerned with building smart machines capable of performing tasks that typically require human intelligence. AI is an interdisciplinary science with multiple approaches, but advancements in machine learning and deep learning are creating a paradigm shift in virtually every sector of the tech industry. AI systems work by ingesting large amounts of labeled training data, analyzing the data for correlations and patterns, and using these patterns to make predictions about future states. In this way, a chatbot that is fed examples of text can learn to generate lifelike exchanges with people, or an image recognition tool can learn to identify and describe objects in images by reviewing millions of examples.">Summarize AI</button>
+                    <button class="example-btn" data-task="learning_path" data-text="SQL">SQL Learning Path</button>
+                </div>
+
+                <button id="submit-btn" class="submit-btn">
+                    <i class="fas fa-magic"></i> Generate with EduGenie
+                </button>
+
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>EduGenie is thinking...</p>
+                    <small>Powered by Gemini 1.5 Pro • This may take a few seconds</small>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div id="result-container" class="result-container hidden">
+                <div class="result-header">
+                    <h3><i class="fas fa-lightbulb"></i> Result</h3>
+                    <div class="result-meta">
+                        <span id="result-source" class="source-badge"></span>
+                        <button id="copy-btn" class="icon-btn" title="Copy"><i class="fas fa-copy"></i></button>
+                        <button id="clear-btn" class="icon-btn" title="Clear"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="result-content" class="result-content"></div>
+                <div id="quiz-interactive" class="quiz-interactive hidden"></div>
+            </div>
+
+            <!-- Error Container -->
+            <div id="error-container" class="error-container hidden">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-text"></span>
+            </div>
+        </main>
+
+        <!-- Features Grid -->
+        <section class="features">
+            <h2><i class="fas fa-star"></i> What EduGenie Can Do</h2>
+            <div class="features-grid">
+                <div class="feature-card" data-task="qa">
+                    <div class="feature-icon qa"><i class="fas fa-question-circle"></i></div>
+                    <h3>Ask Questions</h3>
+                    <p>Ask any academic question and receive smart, concise answers powered by Gemini 1.5 Pro</p>
+                    <small>Endpoint: /qa</small>
+                </div>
+                <div class="feature-card" data-task="explain">
+                    <div class="feature-icon explain"><i class="fas fa-lightbulb"></i></div>
+                    <h3>Explain Concepts</h3>
+                    <p>Understand complex topics through simplified explanations using LaMini-Flan-T5 + Gemini</p>
+                    <small>Endpoint: /explain</small>
+                </div>
+                <div class="feature-card" data-task="quiz">
+                    <div class="feature-icon quiz"><i class="fas fa-clipboard-list"></i></div>
+                    <h3>Generate Quizzes</h3>
+                    <p>Generate 3 MCQs with 4 options each from any topic or passage in JSON format</p>
+                    <small>Endpoint: /quiz</small>
+                </div>
+                <div class="feature-card" data-task="summarize">
+                    <div class="feature-icon summarize"><i class="fas fa-file-alt"></i></div>
+                    <h3>Summarize</h3>
+                    <p>Summarize large educational passages into concise, easy-to-understand versions</p>
+                    <small>Endpoint: /summarize</small>
+                </div>
+                <div class="feature-card" data-task="learning_path">
+                    <div class="feature-icon path"><i class="fas fa-route"></i></div>
+                    <h3>Learning Path</h3>
+                    <p>Get personalized structured learning recommendations from beginner to advanced</p>
+                    <small>Endpoint: /learn/recommendations</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scenario Section -->
+        <section class="scenarios">
+            <h2><i class="fas fa-users"></i> Student Scenarios</h2>
+            <div class="scenario-grid">
+                <div class="scenario">
+                    <h4>Scenario 1: Curious Learner</h4>
+                    <p><em>"Which is the largest ocean?"</em> → Student uses QnA to get instant accurate answer</p>
+                </div>
+                <div class="scenario">
+                    <h4>Scenario 2: Self-Assessment</h4>
+                    <p><em>"The Pythagoras Theorem"</em> → Clicks Generate Quiz to test understanding level</p>
+                </div>
+                <div class="scenario">
+                    <h4>Scenario 3: Structured Learning</h4>
+                    <p><em>"SQL"</em> → Requests learning path with beginner to advanced topics, timelines & resources</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>EduGenie</strong> - Built with FastAPI, HTML+CSS, Jinja2, Google Gemini 1.5 Pro & LaMini-Flan-T5-783M</p>
+            <p>Lightweight & cloud-based • Works on Mac M1 & low-resource devices • Accessible to all learners</p>
+            <div class="links">
+                <a href="/api/docs" target="_blank"><i class="fas fa-book"></i> API Docs</a>
+                <a href="/health" target="_blank"><i class="fas fa-heartbeat"></i> Health</a>
+                <a href="https://github.com/gokulraj0708/EduGenie" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+            </div>
+            <small>Submitted by: Tella Divya Sree • Mentor: Siri • Date: 11/04/2025 • Project: EduGenie MVP</small>
+        </footer>
+    </div>
+
+    <script>
+        const taskSelect = document.getElementById('task-select');
+        const userInput = document.getElementById('user-input');
+        const inputLabel = document.getElementById('input-label');
+        const submitBtn = document.getElementById('submit-btn');
+        const loading = document.getElementById('loading');
+        const resultContainer = document.getElementById('result-container');
+        const resultContent = document.getElementById('result-content');
+        const resultSource = document.getElementById('result-source');
+        const errorContainer = document.getElementById('error-container');
+        const errorText = document.getElementById('error-text');
+        const charCount = document.getElementById('char-count');
+        const quizInteractive = document.getElementById('quiz-interactive');
+
+        const taskConfig = {
+            qa: { label: 'Your Question', placeholder: 'e.g., Which is the largest ocean? Explain quantum computing in simple terms...', endpoint: '/qa', field: 'query' },
+            explain: { label: 'Concept to Explain', placeholder: 'e.g., The Pythagoras Theorem, Photosynthesis, Machine Learning...', endpoint: '/explain', field: 'topic' },
+            quiz: { label: 'Text or Topic for Quiz', placeholder: 'Paste a paragraph or enter a topic (e.g., Photosynthesis is the process by which green plants use sunlight...) - Will generate 3 MCQs with 4 options each', endpoint: '/quiz', field: 'text' },
+            summarize: { label: 'Text to Summarize', placeholder: 'Paste a long educational passage here (min 50 chars) to get concise summary...', endpoint: '/summarize', field: 'text' },
+            learning_path: { label: 'Topic for Learning Path', placeholder: 'e.g., SQL, Python, Machine Learning, Digital Marketing...', endpoint: '/learn/recommendations', field: 'topic' }
+        };
+
+        function updateUIForTask() {
+            const task = taskSelect.value;
+            const config = taskConfig[task];
+            inputLabel.innerHTML = `<i class="fas fa-edit"></i> ${config.label}`;
+            userInput.placeholder = config.placeholder;
+        }
+
+        taskSelect.addEventListener('change', updateUIForTask);
+        userInput.addEventListener('input', () => { charCount.textContent = userInput.value.length; });
+
+        document.querySelectorAll('.example-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                taskSelect.value = btn.dataset.task;
+                userInput.value = btn.dataset.text;
+                charCount.textContent = userInput.value.length;
+                updateUIForTask();
+                userInput.focus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('click', () => {
+                taskSelect.value = card.dataset.task;
+                updateUIForTask();
+                userInput.focus();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        submitBtn.addEventListener('click', async () => {
+            const task = taskSelect.value;
+            const text = userInput.value.trim();
+            const config = taskConfig[task];
+
+            if (!text) {
+                showError('Please enter some text');
+                return;
+            }
+
+            if (task === 'summarize' && text.length < 50) {
+                showError('Text too short to summarize (min 50 characters)');
+                return;
+            }
+
+            // UI states
+            loading.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            try {
+                const payload = {};
+                payload[config.field] = text;
+
+                const response = await fetch(config.endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Something went wrong');
+                }
+
+                displayResult(task, data);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-magic"></i> Generate with EduGenie';
+            }
+        });
+
+        function displayResult(task, data) {
+            resultContainer.classList.remove('hidden');
+            resultSource.textContent = data.source ? `${data.source} • ${data.model || ''}` : 'success';
+            resultSource.className = `source-badge ${data.source === 'gemini' ? 'badge-gemini' : 'badge-fallback'}`;
+
+            let html = '';
+            quizInteractive.classList.add('hidden');
+            quizInteractive.innerHTML = '';
+
+            if (task === 'qa') {
+                html = formatMarkdown(data.answer || 'No answer');
+            } else if (task === 'explain') {
+                html = formatMarkdown(data.explanation || 'No explanation');
+            } else if (task === 'quiz') {
+                const quiz = data.quiz || [];
+                html = `<p><strong>Generated ${quiz.length} MCQs from:</strong> "${data.input_text || ''}"</p>`;
+                html += `<div class="quiz-json"><small>JSON format - Easy integration</small></div>`;
+                
+                // Interactive quiz
+                let interactiveHtml = '';
+                quiz.forEach((q, idx) => {
+                    interactiveHtml += `
+                        <div class="quiz-question" data-correct="${escapeHtml(q.correct_answer)}">
+                            <h4>Q${idx+1}: ${escapeHtml(q.question)}</h4>
+                            <div class="options">
+                                ${q.options.map(opt => `
+                                    <label class="option">
+                                        <input type="radio" name="q${idx}" value="${escapeHtml(opt)}">
+                                        <span>${escapeHtml(opt)}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                            <div class="quiz-feedback hidden"></div>
+                            ${q.explanation ? `<small class="explanation">💡 ${escapeHtml(q.explanation)}</small>` : ''}
+                        </div>
+                    `;
+                });
+                quizInteractive.innerHTML = interactiveHtml;
+                quizInteractive.classList.remove('hidden');
+
+                // Add raw JSON view
+                html += `<details><summary>View Raw JSON</summary><pre>${escapeHtml(JSON.stringify(quiz, null, 2))}</pre></details>`;
+
+                // Add event listeners for quiz checking
+                setTimeout(() => {
+                    document.querySelectorAll('.quiz-question').forEach(qDiv => {
+                        const correct = qDiv.dataset.correct;
+                        qDiv.querySelectorAll('input[type=radio]').forEach(radio => {
+                            radio.addEventListener('change', () => {
+                                const feedback = qDiv.querySelector('.quiz-feedback');
+                                feedback.classList.remove('hidden');
+                                if (radio.value === correct) {
+                                    feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct! 🎉';
+                                    feedback.className = 'quiz-feedback correct';
+                                } else {
+                                    feedback.innerHTML = `<i class="fas fa-times-circle"></i> Incorrect. Correct answer: <strong>${escapeHtml(correct)}</strong>`;
+                                    feedback.className = 'quiz-feedback incorrect';
+                                }
+                            });
+                        });
+                    });
+                }, 100);
+            } else if (task === 'summarize') {
+                html = formatMarkdown(data.summary || 'No summary');
+                if (data.original_length) {
+                    html = `<div class="summary-stats">Original: ${data.original_length} chars → Summary: ${data.summary_length} chars (${data.compression_ratio || ''})</div>` + html;
+                }
+            } else if (task === 'learning_path') {
+                html = formatMarkdown(data.learning_path || 'No learning path');
+            }
+
+            resultContent.innerHTML = html;
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(msg) {
+            errorContainer.classList.remove('hidden');
+            errorText.textContent = msg;
+            errorContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            // Basic markdown formatting
+            let html = escapeHtml(text);
+            
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            
+            // Bold and italic
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Code
+            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+            
+            // Lists
+            html = html.replace(/^\d+\.\s+(.*$)/gim, '<li>$1</li>');
+            html = html.replace(/^\-\s+(.*$)/gim, '<li>$1</li>');
+            
+            // Line breaks
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = html.replace(/\n/g, '<br>');
+            
+            // Wrap in p if not already
+            if (!html.startsWith('<h') && !html.startsWith('<li') && !html.startsWith('<p')) {
+                html = '<p>' + html + '</p>';
+            }
+            
+            // Fix li wrapping
+            html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+            html = html.replace(/<\/ul><br><ul>/g, '');
+            
+            return html;
+        }
+
+        // Copy button
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const text = resultContent.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => btn.innerHTML = orig, 1500);
+            });
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+        });
+
+        // Init
+        updateUIForTask();
+        userInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                submitBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+Hi, I'm presenting EduGenie, Google Gemini Powered Learning Assistant.
+
+EduGenie is a lightweight AI educational assistant that simplifies learning through generative AI. Designed for students of all levels, it works even on low-resource devices like Mac M1.
+
+Let me show you the running application at localhost 8000.
+
+You can see the header with EduGenie logo, tagline, and status badge showing Fallback Mode or Gemini Active. The main card has a task dropdown with five options, textarea, example buttons, and generate button.
+
+First, let's try QnA. I select Ask Question and enter Which is the largest ocean, which is scenario one from our reference document. Clicking Generate, EduGenie is thinking, and we get the answer: Pacific Ocean is the largest, covering thirty percent of Earth's surface. This uses Gemini 1.5 Pro when API key is configured, otherwise fallback knowledge base.
+
+Next, Explain Concept. I enter The Pythagoras Theorem. Generating simplified explanation with definition, key points, analogy, and summary. This module tries LaMini-Flan-T5 local model if configured, else Gemini.
+
+Now, Quiz Generation, which is really cool. I paste a paragraph about photosynthesis and generate. It creates three multiple choice questions with four options each in JSON format. You can see interactive radio buttons. If I select an option, it shows correct or incorrect feedback. There's also raw JSON view for easy LMS integration. The reference doc mentions clean_json_block function to clean markdown code blocks, which we implemented.
+
+Next, Summarize. I paste a long AI paragraph, and it gives concise summary with compression stats, like original six hundred chars to two hundred chars. Great for quick revision.
+
+Finally, Learning Path. I enter SQL, which is scenario three. It generates structured path from beginner week one to two, intermediate, advanced, expert, with topics, timelines, resources like videos, articles, books, projects, and study tips. Personalized from beginner to advanced.
+
+Architecture wise, it's FastAPI backend with five modules, each tries Gemini API first, then fallback templated logic, ensuring app always works even without API key. Frontend is simple HTML, CSS, JavaScript with real-time results. Auto docs at api slash docs.
+
+Key features are all working, no fake buttons, tested with seventeen tests passing, real screenshots captured.
+
+EduGenie democratizes learning, simplifies complex concepts, and is foundation for future enhancements like voice interaction, multilingual support, and mobile app. Thank you for watching!

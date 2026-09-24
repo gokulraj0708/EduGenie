@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.env
+.venv
+venv/
+ENV/
+env/
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+docs/videos/*.mp4
+docs/videos/*.avi
+docs/videos/*.mov
+*.log
+.DOC-20260921-WA0003.pdf
+# Keep screenshots but ignore large video files if needed
+# Uncomment to ignore videos in git if too large
+# docs/videos/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Uvicorn
+uvicorn.pid

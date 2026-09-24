@@ -1,0 +1,21 @@
+Hi, this is testing video for EduGenie, Google Gemini Powered Learning Assistant.
+
+Let me show you the project structure in VS Code.
+
+You can see app folder with main.py, config.py, five modules: qna.py, explanation_module.py, quiz_module.py, summary_module.py, learning_path.py, plus templates and static. Then tests folder with test_api.py and test_modules.py, scripts, docs with screenshots and videos, Project_Phase_Wise_Submission with eight phases, requirements, env example, readme.
+
+Now, tests folder. test_api.py has eleven tests for health, status, home, five modules, compat routes, error handling, fallback. test_modules.py has six unit tests for each module plus edge cases and clean_json_block function.
+
+Let's run the actual test command. I run pytest tests slash dash v.
+
+You can see real terminal output: seventeen tests collected, all passing. Health check passed, API status passed, home page passed, QnA valid query passed with source fallback, explain module passed, quiz generated three questions, summarize compression works, learning path contains beginner, compat routes passed, error handling passed, fallback mechanism works, and all module unit tests passed.
+
+What is being tested? All five core modules, validation for empty and short inputs, error handling for API failure, fallback mechanism ensuring app works without API key, and clean_json_block function from reference doc.
+
+Actual results: seventeen passed in zero point four seven seconds, with only minor deprecation warnings from starlette testclient, which we fixed for TemplateResponse.
+
+Now, manual browser validation. I open the app at localhost eight thousand, select QnA, enter which is largest ocean, generate, and get real answer. All workflows tested: QnA, explain, quiz with interactive feedback, summarize, learning path, plus examples and feature cards.
+
+So, automated tests passing, manual validation complete, no fake results. This is real testing from running project.
+
+Thank you!
